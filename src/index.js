@@ -1,7 +1,9 @@
 // ============================================================
 // GROCERY PRICE COMPARATOR
-// CLOUDFLARE WORKER API
+// CLOUDFLARE WORKER
 // ============================================================
+
+import { searchDmart } from "./suppliers/dmart.js";
 
 
 // ============================================================
@@ -40,11 +42,6 @@ const PRODUCTS = [
 // ============================================================
 // TEMPORARY VARIETY MASTER
 // ============================================================
-//
-// IMPORTANT:
-// These are temporary.
-// Later these will come from our supplier collectors.
-//
 
 const VARIETIES = {
 
@@ -111,10 +108,6 @@ const VARIETIES = {
 // ============================================================
 // TEMPORARY SIZE MASTER
 // ============================================================
-//
-// These are temporary too.
-// Later sizes will be generated from real supplier data.
-//
 
 const SIZES = [
 
@@ -130,10 +123,13 @@ const SIZES = [
 
 
 // ============================================================
-// JSON RESPONSE HELPER
+// JSON RESPONSE
 // ============================================================
 
-function jsonResponse(data, status = 200) {
+function jsonResponse(
+    data,
+    status = 200
+) {
 
     return new Response(
 
@@ -205,7 +201,7 @@ function handleOptions() {
 
 
 // ============================================================
-// API — PRODUCTS
+// GET PRODUCTS
 // ============================================================
 
 function getProducts() {
@@ -224,10 +220,12 @@ function getProducts() {
 
 
 // ============================================================
-// API — VARIETIES
+// GET VARIETIES
 // ============================================================
 
-function getVarieties(product) {
+function getVarieties(
+    product
+) {
 
     if (!product) {
 
@@ -265,10 +263,12 @@ function getVarieties(product) {
 
 
 // ============================================================
-// API — SIZES
+// GET SIZES
 // ============================================================
 
-function getSizes(variety) {
+function getSizes(
+    variety
+) {
 
     if (!variety) {
 
@@ -302,17 +302,19 @@ function getSizes(variety) {
 
 
 // ============================================================
-// API — COMPARE
+// COMPARE PRICES
 // ============================================================
-//
-// This is intentionally a placeholder.
-//
-// We will connect real supplier collectors here later.
-//
 
-async function comparePrices(request) {
+async function comparePrices(
+    request
+) {
 
     let body = {};
+
+
+    // --------------------------------------------------------
+    // READ JSON
+    // --------------------------------------------------------
 
     try {
 
@@ -336,6 +338,10 @@ async function comparePrices(request) {
     }
 
 
+    // --------------------------------------------------------
+    // REQUEST VALUES
+    // --------------------------------------------------------
+
     const {
 
         pincode,
@@ -348,6 +354,10 @@ async function comparePrices(request) {
 
     } = body;
 
+
+    // --------------------------------------------------------
+    // VALIDATION
+    // --------------------------------------------------------
 
     if (!pincode) {
 
@@ -379,6 +389,174 @@ async function comparePrices(request) {
     }
 
 
+    // ========================================================
+    // ALL RESULTS
+    // ========================================================
+
+    let allResults = [];
+
+
+    // ========================================================
+    // DMART
+    // ========================================================
+
+    try {
+
+        console.log(
+            "Starting DMart collector..."
+        );
+
+
+        const dmartResults =
+            await searchDmart(
+
+                pincode,
+
+                product,
+
+                variety,
+
+                size
+
+            );
+
+
+        if (
+            Array.isArray(
+                dmartResults
+            )
+        ) {
+
+            allResults.push(
+                ...dmartResults
+            );
+
+        }
+
+
+        console.log(
+            "DMart results:",
+            dmartResults.length
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "DMart collector error:",
+            error
+        );
+
+    }
+
+
+    // ========================================================
+    // AVAILABLE PRODUCTS
+    // ========================================================
+
+    const availableProducts =
+        allResults.filter(
+
+            item =>
+
+                item.available === true &&
+
+                item.price !== null &&
+
+                item.price !== undefined
+
+        );
+
+
+    // ========================================================
+    // UNAVAILABLE PRODUCTS
+    // ========================================================
+
+    const unavailableProducts =
+        allResults.filter(
+
+            item =>
+                item.available !== true
+
+        );
+
+
+    // ========================================================
+    // LOWEST PRICE
+    // ========================================================
+
+    let lowestProduct = null;
+
+
+    if (
+        availableProducts.length > 0
+    ) {
+
+        lowestProduct =
+            availableProducts.reduce(
+
+                (
+                    lowest,
+                    current
+                ) => {
+
+                    if (
+                        current.price <
+                        lowest.price
+                    ) {
+
+                        return current;
+
+                    }
+
+
+                    return lowest;
+
+                }
+
+            );
+
+    }
+
+
+    // ========================================================
+    // LOWEST PRICE VALUE
+    // ========================================================
+
+    const lowestPrice =
+        lowestProduct
+            ? lowestProduct.price
+            : null;
+
+
+    // ========================================================
+    // PRICE TIES
+    // ========================================================
+
+    const tieProducts =
+        lowestPrice !== null
+
+            ?
+
+            availableProducts.filter(
+
+                item =>
+
+                    item.price ===
+                    lowestPrice
+
+            )
+
+            :
+
+            [];
+
+
+    // ========================================================
+    // FINAL RESPONSE
+    // ========================================================
+
     return jsonResponse({
 
         status:
@@ -401,31 +579,28 @@ async function comparePrices(request) {
         },
 
         total_products:
-            0,
+            allResults.length,
 
         available_products:
-            0,
+            availableProducts.length,
 
         unavailable_products:
-            0,
+            unavailableProducts.length,
 
         lowest_price:
-            null,
+            lowestPrice,
 
         lowest_product:
-            null,
+            lowestProduct,
 
         price_tie:
-            false,
+            tieProducts.length > 1,
 
         tie_products:
-            [],
+            tieProducts,
 
         results:
-            [],
-
-        message:
-            "Supplier collectors are not connected yet."
+            allResults
 
     });
 
@@ -433,7 +608,29 @@ async function comparePrices(request) {
 
 
 // ============================================================
-// MAIN WORKER
+// HEALTH
+// ============================================================
+
+function health() {
+
+    return jsonResponse({
+
+        status:
+            "healthy",
+
+        service:
+            "grocery-price-comparator",
+
+        version:
+            "1.0.0"
+
+    });
+
+}
+
+
+// ============================================================
+// MAIN CLOUDFLARE WORKER
 // ============================================================
 
 export default {
@@ -444,15 +641,18 @@ export default {
     ) {
 
         const url =
-            new URL(request.url);
+            new URL(
+                request.url
+            );
 
 
-        // ----------------------------------------------------
-        // CORS PREFLIGHT
-        // ----------------------------------------------------
+        // ====================================================
+        // CORS
+        // ====================================================
 
         if (
-            request.method === "OPTIONS"
+            request.method ===
+            "OPTIONS"
         ) {
 
             return handleOptions();
@@ -460,9 +660,23 @@ export default {
         }
 
 
-        // ----------------------------------------------------
-        // API — PRODUCTS
-        // ----------------------------------------------------
+        // ====================================================
+        // HEALTH
+        // ====================================================
+
+        if (
+            url.pathname ===
+            "/api/health"
+        ) {
+
+            return health();
+
+        }
+
+
+        // ====================================================
+        // PRODUCTS
+        // ====================================================
 
         if (
             url.pathname ===
@@ -474,9 +688,9 @@ export default {
         }
 
 
-        // ----------------------------------------------------
-        // API — VARIETIES
-        // ----------------------------------------------------
+        // ====================================================
+        // VARIETIES
+        // ====================================================
 
         if (
             url.pathname ===
@@ -496,9 +710,9 @@ export default {
         }
 
 
-        // ----------------------------------------------------
-        // API — SIZES
-        // ----------------------------------------------------
+        // ====================================================
+        // SIZES
+        // ====================================================
 
         if (
             url.pathname ===
@@ -518,9 +732,9 @@ export default {
         }
 
 
-        // ----------------------------------------------------
-        // API — COMPARE
-        // ----------------------------------------------------
+        // ====================================================
+        // COMPARE
+        // ====================================================
 
         if (
             url.pathname ===
@@ -552,34 +766,9 @@ export default {
         }
 
 
-        // ----------------------------------------------------
-        // HEALTH
-        // ----------------------------------------------------
-
-        if (
-            url.pathname ===
-            "/api/health"
-        ) {
-
-            return jsonResponse({
-
-                status:
-                    "healthy",
-
-                service:
-                    "grocery-price-comparator",
-
-                version:
-                    "1.0.0"
-
-            });
-
-        }
-
-
-        // ----------------------------------------------------
+        // ====================================================
         // FRONTEND
-        // ----------------------------------------------------
+        // ====================================================
 
         return env.ASSETS.fetch(
             request
