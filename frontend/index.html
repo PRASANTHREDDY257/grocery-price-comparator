@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Grocery Price Comparator</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Grocery Price Comparator</h1>
+        <p>Compare grocery prices across multiple suppliers</p>
+    </header>
+
+
+    <!-- PINCODE -->
+
+    <section class="card">
+
+        <label for="pincode">
+            Delivery Pincode
+        </label>
+
+        <input
+            type="text"
+            id="pincode"
+            placeholder="Enter pincode"
+            maxlength="6"
+        >
+
+    </section>
+
+
+    <!-- PRODUCT -->
+
+    <section class="card">
+
+        <label for="product">
+            Select Product
+        </label>
+
+        <select id="product">
+
+            <option value="">
+                Select Product
+            </option>
+
+            <option value="Rice">
+                Rice
+            </option>
+
+            <option value="Ghee">
+                Ghee
+            </option>
+
+            <option value="Milk">
+                Milk
+            </option>
+
+            <option value="Butter">
+                Butter
+            </option>
+
+            <option value="Paneer">
+                Paneer
+            </option>
+
+            <option value="Curd">
+                Curd
+            </option>
+
+            <option value="Atta">
+                Atta
+            </option>
+
+            <option value="Dal">
+                Dal
+            </option>
+
+            <option value="Cooking Oil">
+                Cooking Oil
+            </option>
+
+            <option value="Sugar">
+                Sugar
+            </option>
+
+        </select>
+
+    </section>
+
+
+    <!-- VARIETY -->
+
+    <section
+        class="card"
+        id="varietySection"
+        style="display:none;"
+    >
+
+        <label for="variety">
+            Select Variety
+        </label>
+
+        <select id="variety">
+
+            <option value="">
+                Select Variety
+            </option>
+
+        </select>
+
+    </section>
+
+
+    <!-- SIZE -->
+
+    <section
+        class="card"
+        id="sizeSection"
+        style="display:none;"
+    >
+
+        <label for="size">
+            Select Pack Size
+        </label>
+
+        <select id="size">
+
+            <option value="">
+                Select Size
+            </option>
+
+        </select>
+
+    </section>
+
+
+    <!-- COMPARE -->
+
+    <button
+        id="compareButton"
+        disabled
+    >
+        Compare Prices
+    </button>
+
+
+    <!-- RESULTS -->
+
+    <section
+        id="results"
+        class="results"
+    ></section>
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
