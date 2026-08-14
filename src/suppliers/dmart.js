@@ -1,24 +1,5 @@
 // ============================================================
-// DMART SUPPLIER ADAPTER
-// ============================================================
-//
-// Purpose:
-// Collect DMart product information
-// and return a standard product format.
-//
-// Output format:
-// {
-//   platform,
-//   item_id,
-//   name,
-//   brand,
-//   quantity,
-//   price,
-//   mrp,
-//   available,
-//   url
-// }
-//
+// DMART DIAGNOSTIC COLLECTOR
 // ============================================================
 
 
@@ -31,16 +12,11 @@ export async function searchDmart(
 
 
     console.log(
-        "====================================="
+        "================================="
     );
 
     console.log(
-        "DMART SEARCH"
-    );
-
-    console.log(
-        "Pincode:",
-        pincode
+        "DMART TEST"
     );
 
     console.log(
@@ -49,72 +25,121 @@ export async function searchDmart(
     );
 
     console.log(
-        "Variety:",
-        variety
-    );
-
-    console.log(
-        "Size:",
-        size
+        "Pincode:",
+        pincode
     );
 
 
-    // --------------------------------------------------------
-    // IMPORTANT
-    //
-    // This is the adapter shell.
-    //
-    // The actual DMart collector logic will be inserted here.
-    //
-    // Keeping this isolated means:
-    //
-    // index.js does not change when we improve DMart scraping.
-    //
-    // --------------------------------------------------------
+    try {
 
 
-    let results = [];
+        const searchText =
+            encodeURIComponent(
+                product
+            );
 
 
-    /*
-    
-    Expected future collector output:
-
-    results.push({
-
-        platform:
-            "DMart",
-
-        item_id:
-            "1686070",
-
-        name:
-            "SriLalitha Premium Brown Rice",
-
-        brand:
-            "Sri Lalitha",
-
-        quantity:
-            "5 kg",
-
-        price:
-            419,
-
-        mrp:
-            450,
-
-        available:
-            true,
-
-        url:
-            "https://www.dmart.in/product/..."
-
-    });
+        const url =
+            `https://www.dmart.in/search?searchTerm=${searchText}`;
 
 
-    */
+        console.log(
+            "URL:",
+            url
+        );
 
 
-    return results;
+        const response =
+            await fetch(
+
+                url,
+
+                {
+
+                    method:
+                        "GET",
+
+                    headers: {
+
+                        "User-Agent":
+                            "Mozilla/5.0",
+
+                        "Accept":
+                            "text/html"
+
+                    }
+
+                }
+
+            );
+
+
+        console.log(
+            "STATUS:",
+            response.status
+        );
+
+
+        const html =
+            await response.text();
+
+
+        console.log(
+            "HTML SIZE:",
+            html.length
+        );
+
+
+        console.log(
+            "PRODUCT COUNT:",
+            (
+                html.match(
+                    /product/gi
+                ) || []
+            ).length
+        );
+
+
+        console.log(
+            "PRICE COUNT:",
+            (
+                html.match(
+                    /price/gi
+                ) || []
+            ).length
+        );
+
+
+        console.log(
+            "JSON COUNT:",
+            (
+                html.match(
+                    /application\/json/gi
+                ) || []
+            ).length
+        );
+
+
+        // ---------------------------------------------
+        // Temporary return
+        // ---------------------------------------------
+
+        return [];
+
+
+    }
+
+    catch(error) {
+
+
+        console.log(
+            "DMART ERROR:",
+            error.message
+        );
+
+
+        return [];
+
+    }
 
 }
