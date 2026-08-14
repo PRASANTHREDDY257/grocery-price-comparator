@@ -1,8 +1,3 @@
-// ============================================================
-// DMART HTML STRUCTURE ANALYZER
-// ============================================================
-
-
 export async function searchDmart(
     pincode,
     product,
@@ -10,210 +5,38 @@ export async function searchDmart(
     size = null
 ) {
 
+    return [
 
-    const searchText =
-        encodeURIComponent(product);
+        {
 
+            platform: "DMart",
 
-    const url =
-        `https://www.dmart.in/search?searchTerm=${searchText}`;
+            item_id: "test-new-version",
 
+            name: "DMart NEW CODE RUNNING",
 
-    try {
+            brand: "TEST",
 
+            quantity: "TEST",
 
-        const response =
-            await fetch(
+            price: 1,
 
-                url,
+            mrp: 2,
 
-                {
+            available: true,
 
-                    headers: {
+            inventory: {
 
-                        "User-Agent":
-                            "Mozilla/5.0",
+                message:
+                    "If you see this, new dmart.js is deployed"
 
-                        "Accept":
-                            "text/html"
+            },
 
-                    }
-
-                }
-
-            );
-
-
-        const html =
-            await response.text();
-
-
-
-        function count(term) {
-
-            return (
-                html.match(
-                    new RegExp(term, "gi")
-                ) || []
-            ).length;
+            url:
+                "https://www.dmart.in"
 
         }
 
-
-
-        // Look for product links
-
-        const urls =
-            html.match(
-                /https?:\/\/[^"']+product[^"']+/gi
-            ) || [];
-
-
-
-        // Look around price areas
-
-        const priceMatches =
-            html.match(
-                /.{0,80}(price|mrp|selling).{0,120}/gi
-            ) || [];
-
-
-
-        // Look around product ids
-
-        const idMatches =
-            html.match(
-                /.{0,80}(productId|product_id|sku).{0,120}/gi
-            ) || [];
-
-
-
-        return [
-
-            {
-
-                platform:
-                    "DMart",
-
-                item_id:
-                    "analysis",
-
-                name:
-                    "DMart HTML Analysis",
-
-                available:
-                    false,
-
-
-                inventory:
-                    {
-
-                        status:
-                            response.status,
-
-
-                        html_size:
-                            html.length,
-
-
-                        markers:
-                            {
-
-                                productId:
-                                    count(
-                                        "productId"
-                                    ),
-
-                                product_id:
-                                    count(
-                                        "product_id"
-                                    ),
-
-                                sku:
-                                    count(
-                                        "sku"
-                                    ),
-
-                                price:
-                                    count(
-                                        "price"
-                                    ),
-
-                                mrp:
-                                    count(
-                                        "mrp"
-                                    ),
-
-                                sellingPrice:
-                                    count(
-                                        "sellingPrice"
-                                    ),
-
-                                quantity:
-                                    count(
-                                        "quantity"
-                                    )
-
-                            },
-
-
-                        product_urls_found:
-                            urls.slice(
-                                0,
-                                5
-                            ),
-
-
-                        price_samples:
-                            priceMatches.slice(
-                                0,
-                                5
-                            ),
-
-
-                        id_samples:
-                            idMatches.slice(
-                                0,
-                                5
-                            )
-
-                    }
-
-            }
-
-        ];
-
-    }
-
-
-    catch(error) {
-
-
-        return [
-
-            {
-
-                platform:
-                    "DMart",
-
-                name:
-                    "DMart Error",
-
-                available:
-                    false,
-
-                inventory:
-                    {
-
-                        error:
-                            error.message
-
-                    }
-
-            }
-
-        ];
-
-    }
+    ];
 
 }
