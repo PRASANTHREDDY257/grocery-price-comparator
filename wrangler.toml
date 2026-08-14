@@ -1,6 +1,9 @@
 name = "grocery-price-comparator"
 
+main = "src/index.js"
+
 compatibility_date = "2026-08-14"
 
 [assets]
 directory = "./frontend"
+binding = "ASSETS"
