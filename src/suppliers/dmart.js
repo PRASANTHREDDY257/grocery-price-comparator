@@ -2,7 +2,6 @@
 // DMART DIAGNOSTIC COLLECTOR
 // ============================================================
 
-
 export async function searchDmart(
     pincode,
     product,
@@ -10,44 +9,15 @@ export async function searchDmart(
     size = null
 ) {
 
+    const searchText =
+        encodeURIComponent(product);
 
-    console.log(
-        "================================="
-    );
 
-    console.log(
-        "DMART TEST"
-    );
-
-    console.log(
-        "Product:",
-        product
-    );
-
-    console.log(
-        "Pincode:",
-        pincode
-    );
+    const url =
+        `https://www.dmart.in/search?searchTerm=${searchText}`;
 
 
     try {
-
-
-        const searchText =
-            encodeURIComponent(
-                product
-            );
-
-
-        const url =
-            `https://www.dmart.in/search?searchTerm=${searchText}`;
-
-
-        console.log(
-            "URL:",
-            url
-        );
-
 
         const response =
             await fetch(
@@ -56,8 +26,7 @@ export async function searchDmart(
 
                 {
 
-                    method:
-                        "GET",
+                    method: "GET",
 
                     headers: {
 
@@ -74,14 +43,14 @@ export async function searchDmart(
             );
 
 
-        console.log(
-            "STATUS:",
-            response.status
-        );
-
-
         const html =
             await response.text();
+
+
+        console.log(
+            "DMART STATUS:",
+            response.status
+        );
 
 
         console.log(
@@ -90,41 +59,79 @@ export async function searchDmart(
         );
 
 
-        console.log(
-            "PRODUCT COUNT:",
-            (
-                html.match(
-                    /product/gi
-                ) || []
-            ).length
-        );
+        // Return diagnostic item temporarily
 
+        return [
 
-        console.log(
-            "PRICE COUNT:",
-            (
-                html.match(
-                    /price/gi
-                ) || []
-            ).length
-        );
+            {
 
+                platform:
+                    "DMart",
 
-        console.log(
-            "JSON COUNT:",
-            (
-                html.match(
-                    /application\/json/gi
-                ) || []
-            ).length
-        );
+                item_id:
+                    "diagnostic",
 
+                name:
+                    "DMart Diagnostic",
 
-        // ---------------------------------------------
-        // Temporary return
-        // ---------------------------------------------
+                brand:
+                    "Test",
 
-        return [];
+                quantity:
+                    "",
+
+                price:
+                    null,
+
+                mrp:
+                    null,
+
+                available:
+                    false,
+
+                inventory:
+                    {
+
+                        http_status:
+                            response.status,
+
+                        html_size:
+                            html.length,
+
+                        product_count:
+                            (
+                                html.match(
+                                    /product/gi
+                                ) || []
+                            ).length,
+
+                        price_count:
+                            (
+                                html.match(
+                                    /price/gi
+                                ) || []
+                            ).length,
+
+                        json_count:
+                            (
+                                html.match(
+                                    /application\/json/gi
+                                ) || []
+                            ).length,
+
+                        contains_dmart:
+                            html.includes(
+                                "dmart"
+                            )
+
+                    },
+
+                url:
+                    url
+
+            }
+
+        ];
 
 
     }
@@ -132,13 +139,30 @@ export async function searchDmart(
     catch(error) {
 
 
-        console.log(
-            "DMART ERROR:",
-            error.message
-        );
+        return [
 
+            {
 
-        return [];
+                platform:
+                    "DMart",
+
+                name:
+                    "DMart Error",
+
+                available:
+                    false,
+
+                inventory:
+                    {
+
+                        error:
+                            error.message
+
+                    }
+
+            }
+
+        ];
 
     }
 
