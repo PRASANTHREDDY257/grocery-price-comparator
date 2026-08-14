@@ -1,6 +1,7 @@
 // ============================================================
-// DMART DIAGNOSTIC COLLECTOR
+// DMART HTML STRUCTURE ANALYZER
 // ============================================================
+
 
 export async function searchDmart(
     pincode,
@@ -8,6 +9,7 @@ export async function searchDmart(
     variety = null,
     size = null
 ) {
+
 
     const searchText =
         encodeURIComponent(product);
@@ -19,14 +21,13 @@ export async function searchDmart(
 
     try {
 
+
         const response =
             await fetch(
 
                 url,
 
                 {
-
-                    method: "GET",
 
                     headers: {
 
@@ -47,19 +48,45 @@ export async function searchDmart(
             await response.text();
 
 
-        console.log(
-            "DMART STATUS:",
-            response.status
-        );
+
+        function count(term) {
+
+            return (
+                html.match(
+                    new RegExp(term, "gi")
+                ) || []
+            ).length;
+
+        }
 
 
-        console.log(
-            "HTML SIZE:",
-            html.length
-        );
+
+        // Look for product links
+
+        const urls =
+            html.match(
+                /https?:\/\/[^"']+product[^"']+/gi
+            ) || [];
 
 
-        // Return diagnostic item temporarily
+
+        // Look around price areas
+
+        const priceMatches =
+            html.match(
+                /.{0,80}(price|mrp|selling).{0,120}/gi
+            ) || [];
+
+
+
+        // Look around product ids
+
+        const idMatches =
+            html.match(
+                /.{0,80}(productId|product_id|sku).{0,120}/gi
+            ) || [];
+
+
 
         return [
 
@@ -69,72 +96,95 @@ export async function searchDmart(
                     "DMart",
 
                 item_id:
-                    "diagnostic",
+                    "analysis",
 
                 name:
-                    "DMart Diagnostic",
-
-                brand:
-                    "Test",
-
-                quantity:
-                    "",
-
-                price:
-                    null,
-
-                mrp:
-                    null,
+                    "DMart HTML Analysis",
 
                 available:
                     false,
 
+
                 inventory:
                     {
 
-                        http_status:
+                        status:
                             response.status,
+
 
                         html_size:
                             html.length,
 
-                        product_count:
-                            (
-                                html.match(
-                                    /product/gi
-                                ) || []
-                            ).length,
 
-                        price_count:
-                            (
-                                html.match(
-                                    /price/gi
-                                ) || []
-                            ).length,
+                        markers:
+                            {
 
-                        json_count:
-                            (
-                                html.match(
-                                    /application\/json/gi
-                                ) || []
-                            ).length,
+                                productId:
+                                    count(
+                                        "productId"
+                                    ),
 
-                        contains_dmart:
-                            html.includes(
-                                "dmart"
+                                product_id:
+                                    count(
+                                        "product_id"
+                                    ),
+
+                                sku:
+                                    count(
+                                        "sku"
+                                    ),
+
+                                price:
+                                    count(
+                                        "price"
+                                    ),
+
+                                mrp:
+                                    count(
+                                        "mrp"
+                                    ),
+
+                                sellingPrice:
+                                    count(
+                                        "sellingPrice"
+                                    ),
+
+                                quantity:
+                                    count(
+                                        "quantity"
+                                    )
+
+                            },
+
+
+                        product_urls_found:
+                            urls.slice(
+                                0,
+                                5
+                            ),
+
+
+                        price_samples:
+                            priceMatches.slice(
+                                0,
+                                5
+                            ),
+
+
+                        id_samples:
+                            idMatches.slice(
+                                0,
+                                5
                             )
 
-                    },
-
-                url:
-                    url
+                    }
 
             }
 
         ];
 
-
     }
+
 
     catch(error) {
 
